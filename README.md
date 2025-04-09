@@ -9,7 +9,7 @@
 ## Clone
 
 ```
-git clone --recurse-submodules git@github.com:eaglelab-zju/AAA.git
+git clone git@github.com:eaglelab-zju/AAA-UIST.git
 ```
 
 ## Installation
@@ -25,6 +25,8 @@ bash .ci/install.sh
 ## Usage
 
 Scripts for clustering data sets in different ways:
+
+`source .env/bin/activate`
 
 - grasp-custom-GNN: `scripts/grasp.sh`
 
