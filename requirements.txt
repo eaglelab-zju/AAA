@@ -14,3 +14,4 @@ apted>=1.0.3
 rapidfuzz>=3.9.7
 jieba>=0.42.1
 fast_pytorch_kmeans>=0.2.2
+torch_geometric==2.6.1
