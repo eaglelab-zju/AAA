@@ -1,0 +1,16 @@
+torch
+dgl
+dglgo
+ogb
+numpy
+scipy
+scikit-learn>=1.3.2
+graph_datasets==0.8.2
+tensorboard
+the_utils>=0.8.0
+transformers>=4.46.3
+opencv-python>=4.11.0.86
+apted>=1.0.3
+rapidfuzz>=3.9.7
+jieba>=0.42.1
+fast_pytorch_kmeans>=0.2.2
