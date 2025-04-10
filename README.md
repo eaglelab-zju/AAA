@@ -20,11 +20,15 @@ Because the domData dataset is too large, it was downloaded in two batches.
 - CCT: <https://drive.google.com/drive/folders/1UhCEH2kAsYA1w9nBjPoOS9ZD91362Tkg?usp=sharing>
 
 - TPS:
+
   - TPS-graphData: <https://drive.google.com/file/d/1ywnKWHg2cN9NX7SXM8Rd48EY-RMq6_op/view?usp=sharing>
+
   - TPS-axeData: <https://drive.google.com/file/d/1IzQF0psfFv0uhLWcY7ayzLGEy4VINQ47/view?usp=sharing>
+
   - TPS-domData:
-    - batch1:
-    - batch2:
+    - batch1: <https://drive.google.com/file/d/14igtp7uQ8GFEoWfgtIyP1UKUlV-6Oeaf/view?usp=sharing>
+    - batch2: <https://drive.google.com/file/d/1BMRLPkQXN9ziAfCldjrzNvEtxPwCtiFt/view?usp=sharing>
+
 
 ## Installation
 
