@@ -12,6 +12,20 @@
 git clone git@github.com:eaglelab-zju/AAA-UIST.git
 ```
 
+## Dataset
+Because the domData dataset is too large, it was downloaded in two batches.
+
+- APR: <https://drive.google.com/drive/folders/1gCa2_wLTK4EZm1KCsjt4oy7jWYRwz2bJ?usp=sharing>
+
+- CCT: <https://drive.google.com/drive/folders/1UhCEH2kAsYA1w9nBjPoOS9ZD91362Tkg?usp=sharing>
+
+- TPS:
+  - TPS-graphData: <https://drive.google.com/file/d/1ywnKWHg2cN9NX7SXM8Rd48EY-RMq6_op/view?usp=sharing>
+  - TPS-axeData: <https://drive.google.com/file/d/1IzQF0psfFv0uhLWcY7ayzLGEy4VINQ47/view?usp=sharing>
+  - TPS-domData:
+    - batch1:
+    - batch2:
+
 ## Installation
 
 - python>=3.8
