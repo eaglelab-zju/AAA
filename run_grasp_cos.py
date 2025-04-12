@@ -9,9 +9,6 @@ from the_utils import save_to_csv_files, set_device, set_seed
 
 
 def intra_similarity(feature_dict, labels, feature_type, device):
-    """
-    类内平均相似度：每个类的所有类内节点两两算相似度，求整体均值
-    """
     unique_labels = torch.unique(labels)
     total_sim = 0.0
     total_classes = 0
@@ -42,9 +39,6 @@ def intra_similarity(feature_dict, labels, feature_type, device):
 
 
 def cluster_similarity(feature_dict, sampled_page_ids, feature_type, device):
-    """
-    采样节点相似度：采样的节点两两算相似度，求均值
-    """
     if len(sampled_page_ids) < 2:
         return 0.0
 
@@ -60,9 +54,6 @@ def cluster_similarity(feature_dict, sampled_page_ids, feature_type, device):
 
 
 def split_graph_features(graph, page_ids, device):
-    """
-    将图的节点特征拆分为 a11y_emb、text_emb 和 image_emb，并与 page_id 对应
-    """
     features = graph.ndata["feat"].to(device)
 
     a11y_emb = features[:, :131]
@@ -135,7 +126,6 @@ if __name__ == "__main__":
         graph, page_ids = torch.load(feature_path, map_location=device)
         feature_dict = split_graph_features(graph, page_ids, device)
 
-        # 计算grasp的类内平均相似度和采样节点相似度
         folder_path = folder
         emb_file = next(folder_path.iterdir())
         z_grasp, labels, centers = torch.load(emb_file, map_location=device)
@@ -144,13 +134,11 @@ if __name__ == "__main__":
         grasp_row = grasp_df[grasp_df["url"] == emb_file_name].iloc[0]
         sampled_page_ids = grasp_row["sampled_page_ids"]
 
-        # grasp的类内平均相似度
         labels = torch.tensor(labels).to(device)
         intra_sim_grasp_a11y = intra_similarity(feature_dict, labels, "a11y_emb", device)
         intra_sim_grasp_text = intra_similarity(feature_dict, labels, "text_emb", device)
         intra_sim_grasp_image = intra_similarity(feature_dict, labels, "image_emb", device)
 
-        # grasp的采样节点相似度
         cluster_sim_grasp_a11y = cluster_similarity(
             feature_dict, sampled_page_ids, "a11y_emb", device
         )

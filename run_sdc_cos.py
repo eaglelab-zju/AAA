@@ -9,9 +9,6 @@ from the_utils import save_to_csv_files, set_device, set_seed
 
 
 def intra_similarity(feature_dict, labels, feature_type, device):
-    """
-    类内平均相似度：每个类的所有类内节点两两算相似度，求整体均值
-    """
     unique_labels = torch.unique(labels)
     total_sim = 0.0
     total_classes = 0
@@ -42,9 +39,6 @@ def intra_similarity(feature_dict, labels, feature_type, device):
 
 
 def cluster_similarity(feature_dict, sampled_page_ids, feature_type, device):
-    """
-    采样节点相似度：采样的节点两两算相似度，求均值
-    """
     if len(sampled_page_ids) < 2:
         return 0.0
 
@@ -60,9 +54,6 @@ def cluster_similarity(feature_dict, sampled_page_ids, feature_type, device):
 
 
 def split_graph_features(graph, page_ids, device):
-    """
-    将图的节点特征拆分为 a11y_emb、text_emb 和 image_emb，并与 page_id 对应
-    """
     features = graph.ndata["feat"].to(device)
 
     a11y_emb = features[:, :131]
@@ -154,14 +145,12 @@ if __name__ == "__main__":
         z_grasp, labels, centers = torch.load(emb_file, map_location=device)
         emb_file_name = emb_file.name
 
-        # 计算sdc的类内平均相似度和采样节点相似度
         sdc_folder_path = SDC_PATH / emb_file_name
         for sdc_type in ["content", "struc_cont", "structure", "tags", "tree"]:
             sdc_file = sdc_folder_path / sdc_type
             data = torch.load(sdc_file, map_location=device)
             dense_matrix, tsne_matrix, dense_labels, dense_c, tsne_labels, tsne_c = data
 
-            # 计算SDC类内相似度
             dense_labels = dense_labels.clone().detach().to(device)
             tsne_labels = tsne_labels.clone().detach().to(device)
             intra_sim_dense_a11y = intra_similarity(feature_dict, dense_labels, "a11y_emb", device)
@@ -173,7 +162,6 @@ if __name__ == "__main__":
             intra_sim_tsne_text = intra_similarity(feature_dict, tsne_labels, "text_emb", device)
             intra_sim_tsne_image = intra_similarity(feature_dict, tsne_labels, "image_emb", device)
 
-            # 计算SDC采样节点相似度
             sdc_row = sdc_df[sdc_df["url"] == emb_file_name].iloc[0]
             dense_sampled_page_ids = sdc_row[f"{sdc_type}_kmeans_c_sampled_page_ids"]
             tsne_sampled_page_ids = sdc_row[f"{sdc_type}_tsne_kmeans_c_sampled_page_ids"]
