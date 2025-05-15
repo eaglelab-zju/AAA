@@ -2,15 +2,7 @@
 
 <div align="center">
 
-<!-- [![Latest Release](https://img.shields.io/github/v/tag/galogm/py_setting)](https://github.com/galogm/py_setting/tags) -->
-
 </div>
-
-## Clone
-
-```
-git clone git@github.com:eaglelab-zju/AAA-UIST.git
-```
 
 ## Dataset
 Because the domData dataset is too large, it was downloaded in two batches.
