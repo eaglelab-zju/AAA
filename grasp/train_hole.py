@@ -20,7 +20,7 @@ def train_hole(folder, graph: dgl.DGLGraph, features, n_clusters, device, type):
     n_lin_layers = 1
     dump = True
     lr = 0.001
-    n_gnn_layer = 3
+    n_gnn_layer = 1
     pre_epoch = 150
     epochs = 50
     inner_act = torch.nn.Identity()
@@ -28,7 +28,7 @@ def train_hole(folder, graph: dgl.DGLGraph, features, n_clusters, device, type):
     node_ratio = 1
     add_edge_ratio = 0.5
     del_edge_ratio = 0.01
-    gsl_epochs = 10 
+    gsl_epochs = 5
     regularization = 1
     runs = 1
 
@@ -46,14 +46,9 @@ def train_hole(folder, graph: dgl.DGLGraph, features, n_clusters, device, type):
     final_params["gsl_epochs"] = gsl_epochs
 
     time_name = get_str_time()
-    if type == "ignn":
-        save_file = f"results/hole/ignn/hole_custom_gnn_{n_gnn_layer}_gsl_{gsl_epochs}_{time_name[:9]}_{folder}.csv"
-        warmup_filename = f"ignn/hole_custom_run_gnn_{n_gnn_layer}"
-        ignn_path = "ignn/"
-    else:
-        save_file = f"results/hole/hole_custom_gnn_{n_gnn_layer}_gsl_{gsl_epochs}_{time_name[:9]}_{folder}.csv"
-        warmup_filename = f"hole_custom_run_gnn_{n_gnn_layer}"
-        ignn_path = ""
+    save_file = f"results/hole/{type}/hole_custom_gnn_{n_gnn_layer}_gsl_{gsl_epochs}_{time_name[:9]}_{folder}.csv"
+    warmup_filename = f"{type}/hole_custom_run_gnn_{n_gnn_layer}"
+    path = f"{type}/"
 
     adj_sum_raw = graph.adj_external(scipy_fmt="csr").sum()
 
@@ -70,7 +65,7 @@ def train_hole(folder, graph: dgl.DGLGraph, features, n_clusters, device, type):
             n_epochs=epochs,
             norm="sym",
             renorm=True,
-            tb_filename=f"{ignn_path}custom_gnn_{n_gnn_layer}_node_{node_ratio}_{add_edge_ratio}_{del_edge_ratio}_pre_ep{pre_epoch}_ep{epochs}_dim{dim}_{random.randint(0, 999999)}",
+            tb_filename=f"{path}custom_gnn_{n_gnn_layer}_node_{node_ratio}_{add_edge_ratio}_{del_edge_ratio}_pre_ep{pre_epoch}_ep{epochs}_dim{dim}_{random.randint(0, 999999)}",
             warmup_filename=warmup_filename,
             inner_act=inner_act,
             udp=udp,
@@ -107,13 +102,14 @@ def train_hole(folder, graph: dgl.DGLGraph, features, n_clusters, device, type):
             n_epochs=epochs,
             norm="sym",
             renorm=True,
-            tb_filename=f"{ignn_path}custom_gnn_{n_gnn_layer}_node_{node_ratio}_{add_edge_ratio}_{del_edge_ratio}_gsl_{gsl_epochs}_pre_ep{pre_epoch}_ep{epochs}_dim{dim}_{random.randint(0, 999999)}",
+            tb_filename=f"{path}custom_gnn_{n_gnn_layer}_node_{node_ratio}_{add_edge_ratio}_{del_edge_ratio}_gsl_{gsl_epochs}_pre_ep{pre_epoch}_ep{epochs}_dim{dim}_{random.randint(0, 999999)}",
             warmup_filename=warmup_filename,
             inner_act=inner_act,
             udp=udp,
             reset=False,
             regularization=regularization,
             seed=seed,
+            type=type,
         )
 
         model.fit(
