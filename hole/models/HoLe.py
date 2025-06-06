@@ -543,6 +543,8 @@ class HoLe(nn.Module):
                     edge_ratio_raw=add_edge_ratio,
                 ))
 
+            self.graph = dgl.from_scipy(adj_new).to(self.device)
+            
             if self.type == "custom":
                 self.update_features(adj=adj_new)
 
