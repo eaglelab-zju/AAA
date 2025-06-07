@@ -1,6 +1,0 @@
-[submodule "HoLe"]
-	path = hole
-	url = ../HoLe.git
-[submodule "ignn"]
-	path = ignn
-	url = git@github.com:galogm/IGNN.git
