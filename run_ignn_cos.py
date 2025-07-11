@@ -71,6 +71,50 @@ def split_graph_features(graph, page_ids, device):
     return feature_dict
 
 
+def calculate_averages_and_save_conclusion(model_type):
+    result_files = [
+        f"results/{model_type}/a11y_emb.csv",
+        f"results/{model_type}/text_emb.csv",
+        f"results/{model_type}/image_emb.csv",
+    ]
+
+    print(f"Attempting to read the following files: {result_files}")
+    results = []
+
+    for file_path in result_files:
+        if os.path.exists(file_path):
+            print(f"File exists: {file_path}")
+            df = pd.read_csv(file_path)
+            avg_intra_sim = df["intra_sim"].mean()
+            avg_cluster_sim = df["cluster_sim"].mean()
+            diff = avg_intra_sim - avg_cluster_sim
+
+            file_name = os.path.basename(file_path).split(".")[0]
+            results.append(
+                {
+                    "file": file_name,
+                    "avg_intra_sim": avg_intra_sim,
+                    "avg_cluster_sim": avg_cluster_sim,
+                    "diff": diff,
+                }
+            )
+        else:
+            print(f"File does not exist: {file_path}")
+
+    print(f"Processing results: {results}")
+    if results:
+        conclusion_df = pd.DataFrame(results)
+        conclusion_path = f"results/{model_type}/conclude.csv"
+        try:
+            os.makedirs(os.path.dirname(conclusion_path), exist_ok=True)
+            conclusion_df.to_csv(conclusion_path, index=False)
+            print(f"Conclusion saved to {conclusion_path}")
+        except Exception as e:
+            print(f"Error saving conclusion file: {e}")
+    else:
+        print(f"No results to save")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="cos",
@@ -95,9 +139,9 @@ if __name__ == "__main__":
     device = set_device(args.gpu_id)
 
     EMB_PATH = Path("./data")
-    GRAPH_PATH = Path("./tmp/grasp/ignn/graphs")
-    GRASP_PATH = EMB_PATH / "grasp" / "ignn"
-    GRASP_CSV = Path("./results/ignn/grasp.csv")
+    GRAPH_PATH = Path("./tmp/ignn2/graphs")
+    GRASP_PATH = EMB_PATH / "grasp" / "ignn2"
+    GRASP_CSV = Path("./results/ignn2/grasp.csv")
     DOM_PATH = Path("../UIST_DOMData")
 
     grasp_df = pd.read_csv(GRASP_CSV)
@@ -150,7 +194,7 @@ if __name__ == "__main__":
                 "intra_sim": intra_sim_grasp_a11y,
                 "cluster_sim": cluster_sim_grasp_a11y,
             },
-            csv_name="ignn/a11y_emb.csv",
+            csv_name="ignn2/a11y_emb.csv",
         )
         save_to_csv_files(
             results={
@@ -159,7 +203,7 @@ if __name__ == "__main__":
                 "intra_sim": intra_sim_grasp_text,
                 "cluster_sim": cluster_sim_grasp_text,
             },
-            csv_name="ignn/text_emb.csv",
+            csv_name="ignn2/text_emb.csv",
         )
         save_to_csv_files(
             results={
@@ -168,6 +212,10 @@ if __name__ == "__main__":
                 "intra_sim": intra_sim_grasp_image,
                 "cluster_sim": cluster_sim_grasp_image,
             },
-            csv_name="ignn/image_emb.csv",
+            csv_name="ignn2/image_emb.csv",
         )
+
+    print("Generating conclusion file...")
+    calculate_averages_and_save_conclusion("ignn2")
+
 print("Done!")

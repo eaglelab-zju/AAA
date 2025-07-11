@@ -1,30 +1,26 @@
 """Homophily-enhanced Structure Learning for Graph Clustering
 """
+
 import copy
 import math
-from pathlib import Path
 import sys
 import time
-from typing import Callable
-from typing import List
+from pathlib import Path
+from typing import Callable, List
 
 import dgl
 import numpy as np
 import scipy.sparse as sp
 import torch
 import torch.nn.functional as F
+from modules import InnerProductDecoder, LinTrans, SampleDecoder, preprocess_graph
 from sklearn.cluster import KMeans
 from torch import nn
-
-from modules import InnerProductDecoder
-from modules import LinTrans
-from modules import preprocess_graph
-from modules import SampleDecoder
-from utils import eliminate_zeros
-from utils import set_seed
+from utils import eliminate_zeros, set_seed
 
 from ignn.ignn.models import IGNN
 from ignn.ignn.modules import DataConf, INConf
+
 
 class HoLe(nn.Module):
     """HoLe"""
@@ -52,7 +48,7 @@ class HoLe(nn.Module):
         reset=False,
         regularization=0,
         seed: int = 4096,
-        type: str = "custom",
+        type: str = "ignn",
     ):
         super().__init__()
         self.n_clusters = n_clusters
@@ -100,7 +96,7 @@ class HoLe(nn.Module):
                 RN=self.RN,
                 n_layers=1,
                 nas_dropout=0.0,
-                nss_dropout=0.8,
+                nss_dropout=0.5,
                 clf_dropout=0.5,
                 act="relu",
                 norm="bn",
@@ -110,8 +106,7 @@ class HoLe(nn.Module):
                 device=self.device,
                 out_ndim_trans=hidden_units[-1],
             )
-        self.cluster_layer = nn.Parameter(
-            torch.Tensor(self.n_clusters, hidden_units[-1]))
+        self.cluster_layer = nn.Parameter(torch.Tensor(self.n_clusters, hidden_units[-1]))
         torch.nn.init.xavier_normal_(self.cluster_layer.data)
 
         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -131,7 +126,7 @@ class HoLe(nn.Module):
             fast=False,
             name="grasp",
         )
-        z = self.ignn(edge_index, self.sm_fea_s, IN_config, device=self.device, fast=False)
+        z = self.ignn(edge_index, self.features, IN_config, device=self.device, fast=False)
         return z
 
     def reset_weights(self):
@@ -139,11 +134,10 @@ class HoLe(nn.Module):
         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
 
     def _convert_adj_to_edge_index(self, adj):
-      adj = adj.tocoo()
-      return torch.stack([
-          torch.from_numpy(adj.row).long(),
-          torch.from_numpy(adj.col).long()
-      ], dim=0).to(self.device)
+        adj = adj.tocoo()
+        return torch.stack(
+            [torch.from_numpy(adj.row).long(), torch.from_numpy(adj.col).long()], dim=0
+        ).to(self.device)
 
     @staticmethod
     def bce_loss(preds, labels, norm=1.0, pos_weight=None):
@@ -189,10 +183,9 @@ class HoLe(nn.Module):
             z = self.get_embedding()
 
         try:
-          kmeans = KMeans(n_clusters=self.n_clusters, n_init=20)
-          _ = kmeans.fit_predict(z.data.cpu().numpy())
-          self.cluster_layer.data = torch.Tensor(kmeans.cluster_centers_).to(
-            self.device)
+            kmeans = KMeans(n_clusters=self.n_clusters, n_init=20)
+            _ = kmeans.fit_predict(z.data.cpu().numpy())
+            self.cluster_layer.data = torch.Tensor(kmeans.cluster_centers_).to(self.device)
         except Exception as e:
             print(e)
 
@@ -205,8 +198,7 @@ class HoLe(nn.Module):
         Returns:
             torch.Tensor: Soft assignments
         """
-        q = 1.0 / (1.0 + torch.sum(
-            torch.pow(z.unsqueeze(1) - self.cluster_layer, 2), 2) / 1)
+        q = 1.0 / (1.0 + torch.sum(torch.pow(z.unsqueeze(1) - self.cluster_layer, 2), 2) / 1)
         q = q.pow((1 + 1.0) / 2.0)
         q = (q.t() / torch.sum(q, 1)).t()
         return q
@@ -225,6 +217,7 @@ class HoLe(nn.Module):
                 z = self.encoder(self.sm_fea_s)
 
             preds = self.inner_product_decoder(z).view(-1)
+            assert self.adj_orig is not None, "adj_orig must not be None in pretraining!"
             loss = self.bce_loss(
                 preds,
                 self.lbls,
@@ -237,8 +230,7 @@ class HoLe(nn.Module):
             self.optimizer.step()
             cur_loss = loss.item()
 
-            print(f"Cluster Epoch: {epoch}, embeds_loss={cur_loss}"
-                  f"time={time.time() - t:.5f}")
+            print(f"Cluster Epoch: {epoch}, embeds_loss={cur_loss}" f"time={time.time() - t:.5f}")
 
             if cur_loss < best_loss:
                 best_loss = cur_loss
@@ -266,23 +258,27 @@ class HoLe(nn.Module):
                 z = self.encoder(self.sm_fea_s)
 
             preds = self.inner_product_decoder(z).view(-1)
-            loss = self.bce_loss(preds, self.lbls, self.norm_weights,
-                                 self.pos_weight)
+            loss = self.bce_loss(preds, self.lbls, self.norm_weights, self.pos_weight)
 
             q = self.get_Q(z)
             p = self.target_distribution(Q.detach())
             kl_loss = F.kl_div(q.log(), p, reduction="batchmean")
 
-            (loss + kl_loss + self.regularization * self.bce_loss(
-                self.inner_product_decoder(q).view(-1), preds)).backward()
+            (
+                loss
+                + kl_loss
+                + self.regularization * self.bce_loss(self.inner_product_decoder(q).view(-1), preds)
+            ).backward()
 
             self.optimizer.step()
 
             cur_loss = loss.item()
 
-            print(f"Cluster Epoch: {epoch}, embeds_loss={cur_loss:.5f},"
-                  f"kl_loss={kl_loss.item()},"
-                  f"time={time.time() - t:.5f}")
+            print(
+                f"Cluster Epoch: {epoch}, embeds_loss={cur_loss:.5f},"
+                f"kl_loss={kl_loss.item()},"
+                f"time={time.time() - t:.5f}"
+            )
 
             if cur_loss < best_loss:
                 best_loss = cur_loss
@@ -318,11 +314,12 @@ class HoLe(nn.Module):
         top_k_idx = np.array([], dtype="int64")
         for i in range(self.n_clusters):
             c_idx = (preds == i).nonzero()[0]
-            top_k_idx = np.concatenate((
-                top_k_idx,
-                c_idx[preds_soft[c_idx].argsort()[::-1]
-                      [:int(len(c_idx) * ratio)]],
-            ))
+            top_k_idx = np.concatenate(
+                (
+                    top_k_idx,
+                    c_idx[preds_soft[c_idx].argsort()[::-1][: int(len(c_idx) * ratio)]],
+                )
+            )
 
         top_k_preds = preds[top_k_idx]
 
@@ -333,12 +330,11 @@ class HoLe(nn.Module):
 
                 n_nodes_c = mask.sum()
                 cluster_c = top_k_idx[mask]
-                adj_c = adj_tensor.index_select(
-                    0, torch.LongTensor(cluster_c)).index_select(
-                        1, torch.LongTensor(cluster_c))
+                adj_c = adj_tensor.index_select(0, torch.LongTensor(cluster_c)).index_select(
+                    1, torch.LongTensor(cluster_c)
+                )
 
-                add_num = math.ceil(edge_ratio * self.adj_sum_raw * n_nodes_c /
-                                    n_nodes)
+                add_num = math.ceil(edge_ratio * self.adj_sum_raw * n_nodes_c / n_nodes)
                 if add_num == 0:
                     add_num = math.ceil(self.adj_sum_raw * n_nodes_c / n_nodes)
 
@@ -347,18 +343,17 @@ class HoLe(nn.Module):
                 sim = torch.matmul(cluster_embeds, cluster_embeds.t())
 
                 sim = (
-                    sim *
-                    (torch.eye(sim.shape[0], dtype=int) ^ 1).to(self.device) +
-                    torch.eye(sim.shape[0], dtype=int).to(self.device) * -100)
+                    sim * (torch.eye(sim.shape[0], dtype=int) ^ 1).to(self.device)
+                    + torch.eye(sim.shape[0], dtype=int).to(self.device) * -100
+                )
 
-                sim = sim * (adj_c ^ 1).to(self.device) + adj_c.to(
-                    self.device) * -100
+                sim = sim * (adj_c ^ 1).to(self.device) + adj_c.to(self.device) * -100
 
                 sim = sim.view(-1)
                 top = sim.sort(descending=True)
                 top_sort = top.indices.cpu().numpy()
 
-                sim_top_k = top_sort[:add_num * 2]
+                sim_top_k = top_sort[: add_num * 2]
                 xind = sim_top_k // n_nodes_c
                 yind = sim_top_k % n_nodes_c
                 u = cluster_c[xind]
@@ -393,42 +388,37 @@ class HoLe(nn.Module):
                 )
                 del_num = int(add_num_actual)
 
-            del_edges = negs_inds[np.argpartition(negs,
-                                                  del_num - 1)[:del_num - 1]]
+            del_edges = negs_inds[np.argpartition(negs, del_num - 1)[: del_num - 1]]
 
             u_del = del_edges // z_detached.shape[0]
             v_del = del_edges % z_detached.shape[0]
 
-            adj_cp[u_del, v_del] = adj_cp[v_del,
-                                          u_del] = np.array([0] * len(u_del))
+            adj_cp[u_del, v_del] = adj_cp[v_del, u_del] = np.array([0] * len(u_del))
 
-            isolated_nodes = (np.asarray(adj_cp.sum(1)).flatten().astype(bool)
-                              ^ True).nonzero()[0]
+            isolated_nodes = (np.asarray(adj_cp.sum(1)).flatten().astype(bool) ^ True).nonzero()[0]
             if len(isolated_nodes):
                 for node_zero in isolated_nodes:
                     with torch.no_grad():
                         max_sim_node_0 = np.argpartition(
-                            self.sample_decoder(z_detached[node_zero],
-                                                z_detached).cpu().numpy(),
+                            self.sample_decoder(z_detached[node_zero], z_detached).cpu().numpy(),
                             n_nodes - 2,
                         )[-2:][0]
-                        adj_cp[node_zero,
-                               max_sim_node_0] = adj_cp[max_sim_node_0,
-                                                        node_zero] = 1
+                        adj_cp[node_zero, max_sim_node_0] = adj_cp[max_sim_node_0, node_zero] = 1
 
                         neighbors = self.adj_orig[node_zero, :].nonzero()[1]
                         if len(neighbors):
-                            max_sim_node_1 = neighbors[self.sample_decoder(
-                                z_detached[node_zero],
-                                z_detached[neighbors]).argmax()]
-                            adj_cp[node_zero,
-                                   max_sim_node_1] = adj_cp[max_sim_node_1,
-                                                            node_zero] = 1
+                            max_sim_node_1 = neighbors[
+                                self.sample_decoder(
+                                    z_detached[node_zero], z_detached[neighbors]
+                                ).argmax()
+                            ]
+                            adj_cp[node_zero, max_sim_node_1] = adj_cp[
+                                max_sim_node_1, node_zero
+                            ] = 1
         return adj_cp
 
     def update_features(self, adj):
-        """Check whether adj matrix needs to remove self-loops
-        """
+        """Check whether adj matrix needs to remove self-loops"""
         sm_fea_s = sp.csr_matrix(self.features).toarray()
 
         adj_cp = copy.deepcopy(adj)
@@ -447,15 +437,16 @@ class HoLe(nn.Module):
             sm_fea_s = a.dot(sm_fea_s)
         self.sm_fea_s = torch.FloatTensor(sm_fea_s).to(self.device)
 
-        self.pos_weight = torch.FloatTensor([
-            (float(adj_csr.shape[0] * adj_csr.shape[0] - adj_csr.sum()) /
-             adj_csr.sum())
-        ]).to(self.device)
-        self.norm_weights = (adj_csr.shape[0] * adj_csr.shape[0] / float(
-            (adj_csr.shape[0] * adj_csr.shape[0] - adj_csr.sum()) * 2))
+        self.pos_weight = torch.FloatTensor(
+            [(float(adj_csr.shape[0] * adj_csr.shape[0] - adj_csr.sum()) / adj_csr.sum())]
+        ).to(self.device)
+        self.norm_weights = (
+            adj_csr.shape[0]
+            * adj_csr.shape[0]
+            / float((adj_csr.shape[0] * adj_csr.shape[0] - adj_csr.sum()) * 2)
+        )
 
-        self.lbls = torch.FloatTensor(adj_csr.todense()).view(-1).to(
-            self.device)
+        self.lbls = torch.FloatTensor(adj_csr.todense()).view(-1).to(self.device)
 
     def fit(
         self,
@@ -482,6 +473,9 @@ class HoLe(nn.Module):
         self.n_nodes = self.features.shape[0]
         self.labels = labels
         self.adj_sum_raw = adj_sum_raw
+        self.norm_weights = 1.0
+        self.pos_weight = None
+        self.lbls = torch.FloatTensor(adj.todense()).view(-1).to(self.device)
 
         adj = eliminate_zeros(adj)
 
@@ -539,7 +533,8 @@ class HoLe(nn.Module):
                     ratio=node_ratio,
                     del_ratio=del_edge_ratio,
                     edge_ratio_raw=add_edge_ratio,
-                ))
+                )
+            )
 
             if self.type == "custom":
                 self.update_features(adj=adj_new)
@@ -557,8 +552,7 @@ class HoLe(nn.Module):
     def get_embedding(self, best=True):
         with torch.no_grad():
             if self.type == "ignn":
-                mu = (self.best_model.ignn_forward()
-                      if best else self.ignn_forward())
+                mu = self.best_model.ignn_forward() if best else self.ignn_forward()
             elif self.type == "custom":
                 if best:
                     mu = self.best_model.encoder(self.sm_fea_s)
