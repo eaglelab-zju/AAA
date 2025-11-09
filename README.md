@@ -63,7 +63,7 @@ Run different clustering approaches for the TPS dataset:
   ```bash
   bash scripts/ignn.sh
   ```
-* **SDC**:
+* **SDC w & w/o TSNE**:
 
   ```bash
   bash scripts/sdc.sh
@@ -73,17 +73,17 @@ Run different clustering approaches for the TPS dataset:
 
 Compute metrics for evaluation:
 
-* **GRASP**:
+* **GRASP with GCN**:
 
   ```bash
   bash scripts/cos.sh
   ```
-* **IGNN**:
+* **GRASP with IGNN**:
 
   ```bash
   bash scripts/ignn_cos.sh
   ```
-* **SDC**:
+* **SDC w & w/o TSNE**:
 
   ```bash
   bash scripts/sdc_cos.sh
