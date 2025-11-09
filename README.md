@@ -1,6 +1,6 @@
 # AAA
 
-Official implementation and datasets of the **AAAI 2026 AISI** paper:  
+Official implementation and datasets of the **AAAI 2026 Special Track AI for Social Impact** paper:  
 
 [**Towards Scalable Web Accessibility Audit with MLLMs as Copilots**](https://arxiv.org/abs/2511.03471).
 
@@ -53,7 +53,7 @@ Please run the experiments of GRASP and SDC as follows.
 
 Run different clustering approaches for the TPS dataset:
 
-* **GRASP with Custom GNN**:
+* **GRASP with GCN**:
 
   ```bash
   bash scripts/grasp.sh
@@ -63,7 +63,7 @@ Run different clustering approaches for the TPS dataset:
   ```bash
   bash scripts/ignn.sh
   ```
-* **SDC (Structure-Dependent Clustering)**:
+* **SDC**:
 
   ```bash
   bash scripts/sdc.sh
@@ -71,19 +71,19 @@ Run different clustering approaches for the TPS dataset:
 
 **Evaluation:**
 
-Compute similarity metrics for evaluation:
+Compute metrics for evaluation:
 
-* **GRASP Cosine Similarity**:
+* **GRASP**:
 
   ```bash
   bash scripts/cos.sh
   ```
-* **IGNN Cosine Similarity**:
+* **IGNN**:
 
   ```bash
   bash scripts/ignn_cos.sh
   ```
-* **SDC Cosine Similarity**:
+* **SDC**:
 
   ```bash
   bash scripts/sdc_cos.sh
