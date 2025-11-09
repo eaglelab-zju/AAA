@@ -222,7 +222,7 @@ class HoLe(nn.Module):
             t = time.time()
 
             if self.type == "ignn":
-                z = self.ignn_forward() 
+                z = self.ignn_forward()
             elif self.type == "custom":
                 z = self.encoder(self.sm_fea_s)
 
@@ -263,7 +263,7 @@ class HoLe(nn.Module):
             t = time.time()
 
             if self.type == "ignn":
-                z = self.ignn_forward() 
+                z = self.ignn_forward()
             elif self.type == "custom":
                 z = self.encoder(self.sm_fea_s)
 
@@ -542,7 +542,9 @@ class HoLe(nn.Module):
                     del_ratio=del_edge_ratio,
                     edge_ratio_raw=add_edge_ratio,
                 ))
-
+            self.graph = dgl.from_scipy(adj_new).to(self.device)
+            
+            print(f"type:{self.type}")
             if self.type == "custom":
                 self.update_features(adj=adj_new)
 
@@ -557,8 +559,10 @@ class HoLe(nn.Module):
     def get_embedding(self, best=True):
         with torch.no_grad():
             if self.type == "ignn":
-                mu = (self.best_model.ignn_forward() 
-                      if best else self.ignn_forward())
+                if best:
+                    mu = self.best_model.ignn_forward()
+                else:
+                    mu = self.ignn_forward()
             elif self.type == "custom":
                 if best:
                     mu = self.best_model.encoder(self.sm_fea_s)

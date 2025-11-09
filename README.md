@@ -1,58 +1,50 @@
-# AAA
+# AAA (Automated Accessibility Assessment)
 
 <div align="center">
 
 </div>
 
 ## Dataset
-Because the domData dataset is too large, it was downloaded in two batches.
 
-- APR: <https://drive.google.com/drive/folders/1Crsc00LyOahNfRc4-46kEo7UNvjPhJFA?usp=sharing>
+**⚠️ Important: Please download at least the TPS dataset and place it in the `data/TPS` directory at the same level as this project before running the scripts.**
 
-- CCT: <https://drive.google.com/drive/folders/1UhCEH2kAsYA1w9nBjPoOS9ZD91362Tkg?usp=sharing>
+The dataset consists of four parts: **APR**, **CCT**, **TPS**, and **CPE**. 
 
-- TPS:
+**Note**: In our experiments, we only use the **TPS** dataset. 
 
-  - TPS-graphData: <https://drive.google.com/file/d/1ywnKWHg2cN9NX7SXM8Rd48EY-RMq6_op/view?usp=sharing>
-
-  - TPS-axeData: <https://drive.google.com/file/d/1IzQF0psfFv0uhLWcY7ayzLGEy4VINQ47/view?usp=sharing>
-
-  - TPS-domData:
-    - batch1: <https://drive.google.com/file/d/14igtp7uQ8GFEoWfgtIyP1UKUlV-6Oeaf/view?usp=sharing>
-    - batch2: <https://drive.google.com/file/d/1BMRLPkQXN9ziAfCldjrzNvEtxPwCtiFt/view?usp=sharing>
-
-- CPE: <https://drive.google.com/drive/folders/10ahYck3D0p3ec1_8cff4BkUhbujQ5lDk?usp=sharing>
+All datasets are available at: <https://zenodo.org/records/17548393>
 
 ## Installation
 
-- python>=3.8
-- for installation scripts see `.ci/install-dev.sh`, `.ci/install.sh`
+### Requirements
+- Python >= 3.8
+- CUDA-compatible GPU (recommended)
 
+### Setup
 ```bash
+# Run installation scripts
 bash .ci/install-dev.sh
 bash .ci/install.sh
+
+# Activate virtual environment
+source .env/bin/activate
 ```
 
 ## Usage
 
-Scripts for clustering data sets in different ways:
+### Clustering Scripts
+Execute different clustering approaches:
 
-`source .env/bin/activate`
+- **GRASP with Custom GNN**: `bash scripts/grasp.sh`
+- **GRASP with IGNN**: `bash scripts/ignn.sh`
+- **SDC (Structure-Dependent Clustering)**: `bash scripts/sdc.sh`
 
-- grasp-custom-GNN: `scripts/grasp.sh`
+### Similarity Calculation Scripts
+Compute similarity metrics for evaluation:
 
-- grasp-IGNN: `scripts/ignn.sh`
-
-- sdc: `scripts/sdc.sh`
-
-
-Script for calculating similarity:
-
-- grasp-custom-GNN: `scripts/cos.sh`
-
-- grasp-IGNN: `scripts/ignn_cos.sh`
-
-- sdc: `scripts/sdc_cos.sh`
+- **GRASP Cosine Similarity**: `bash scripts/cos.sh`
+- **IGNN Cosine Similarity**: `bash scripts/ignn_cos.sh`
+- **SDC Cosine Similarity**: `bash scripts/sdc_cos.sh`
 
 ## Requirements
 

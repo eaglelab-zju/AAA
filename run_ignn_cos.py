@@ -95,11 +95,12 @@ if __name__ == "__main__":
     device = set_device(args.gpu_id)
 
     EMB_PATH = Path("./data")
-    GRAPH_PATH = Path("./tmp/grasp/ignn/graphs")
+    GRAPH_PATH = Path("./tmp/ignn/graphs")
     GRASP_PATH = EMB_PATH / "grasp" / "ignn"
     GRASP_CSV = Path("./results/ignn/grasp.csv")
-    DOM_PATH = Path("../UIST_DOMData")
+    DOM_PATH = Path("../data/TPS/UIST_DOMData")
 
+    print(GRASP_PATH)
     grasp_df = pd.read_csv(GRASP_CSV)
     grasp_df["sampled_page_ids"] = grasp_df["sampled_page_ids"].apply(
         lambda x: x.strip("[]").replace("'", "").split()
@@ -145,7 +146,7 @@ if __name__ == "__main__":
 
         save_to_csv_files(
             results={
-                "model": "grasp",
+                "model": "grasp_ignn",
                 "url": emb_file_name,
                 "intra_sim": intra_sim_grasp_a11y,
                 "cluster_sim": cluster_sim_grasp_a11y,
@@ -154,7 +155,7 @@ if __name__ == "__main__":
         )
         save_to_csv_files(
             results={
-                "model": "grasp",
+                "model": "grasp_ignn",
                 "url": emb_file_name,
                 "intra_sim": intra_sim_grasp_text,
                 "cluster_sim": cluster_sim_grasp_text,
@@ -163,11 +164,45 @@ if __name__ == "__main__":
         )
         save_to_csv_files(
             results={
-                "model": "grasp",
+                "model": "grasp_ignn",
                 "url": emb_file_name,
                 "intra_sim": intra_sim_grasp_image,
                 "cluster_sim": cluster_sim_grasp_image,
             },
             csv_name="ignn/image_emb.csv",
         )
+    # Compute and save text/image averages and differences (4 decimal places)
+    def _save_summary(input_csv: Path, output_csv: Path, model: str = "grasp"):
+        try:
+            if not input_csv.exists():
+                print(f"Input file not found: {input_csv}")
+                return
+            df = pd.read_csv(input_csv)
+            if df.empty:
+                print(f"Input file is empty: {input_csv}")
+                return
+            avg_intra = df["intra_sim"].mean()
+            avg_cluster = df["cluster_sim"].mean()
+            diff = avg_intra - avg_cluster
+
+            summary_df = pd.DataFrame(
+                [
+                    {
+                        "model": model,
+                        "avg_intra_sim": f"{avg_intra:.4f}",
+                        "avg_cluster_sim": f"{avg_cluster:.4f}",
+                        "diff": f"{diff:.4f}",
+                    }
+                ]
+            )
+            output_csv.parent.mkdir(parents=True, exist_ok=True)
+            summary_df.to_csv(output_csv, index=False)
+            print(f"Saved summary: {output_csv}")
+        except Exception as e:
+            print(f"Error saving summary for {input_csv}: {e}")
+
+    print("Generating text/image summaries...")
+    _save_summary(Path("./results/ignn/text_emb.csv"), Path("./results/ignn/text_summary.csv"))
+    _save_summary(Path("./results/ignn/image_emb.csv"), Path("./results/ignn/image_summary.csv"))
+
 print("Done!")
