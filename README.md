@@ -1,4 +1,4 @@
-# AAA (Automated Accessibility Assessment)
+# AAA
 
 <div align="center">
 
