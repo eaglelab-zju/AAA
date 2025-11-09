@@ -1,26 +1,41 @@
 # AAA
 
-<div align="center">
+Official implementation and datasets of the **AAAI 2026 AISI** paper:  
 
-</div>
+[**Towards Scalable Web Accessibility Audit with MLLMs as Copilots**](https://arxiv.org/abs/2511.03471).
 
-## Dataset
+This repository provides the implementation of the **GRASP** method and accompanying datasets **AWA**.
 
-**⚠️ Important: Please download at least the TPS dataset and place it in the `data/TPS` directory at the same level as this project before running the scripts.**
+## 📊 Dataset [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17548393.svg)](https://doi.org/10.5281/zenodo.17548393)
 
-The dataset consists of four parts: **APR**, **CCT**, **TPS**, and **CPE**. 
+The **AWA Web Accessibility Benchmark** consists of four datasets:
 
-**Note**: In our experiments, we only use the **TPS** dataset. 
+- **APR** – Accessibility-relevant Page Recognition
+- **CCT** – CAPTCHA of Cognitive Tests 
+- **TPS** – Triple-representativeness Page Sampling
+- **CPE** – Complete Process Extraction 
 
-All datasets are available at: <https://zenodo.org/records/17548393>
+All datasets are publicly available on Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17548393.svg)](https://doi.org/10.5281/zenodo.17548393)
 
-## Installation
+> [!Important]
+> Before running any scripts, please download at least the **TPS** dataset and place it in the `data/TPS` directory at the same level as this project.  
+> 
+> This repository implements the **GRASP** method, which uses only the TPS dataset.  
+> 
+> For experiments involving **APR**, **CCT**, and **CPE**, please refer to the prompts and run them with any MLLMs as in the [Appendix of our paper](https://arxiv.org/abs/2511.03471).
 
-### Requirements
+
+## 🛠️ Installation
+
+**Requirements:**
 - Python >= 3.8
 - CUDA-compatible GPU (recommended)
+- Dependencies are listed in:
+  * [requirements.txt](./requirements.txt)
+  * [requirements-dev.txt](./requirements-dev.txt)
+  * [pyproject.toml](./pyproject.toml)
 
-### Setup
+**Setup:**
 ```bash
 # Run installation scripts
 bash .ci/install-dev.sh
@@ -30,26 +45,64 @@ bash .ci/install.sh
 source .env/bin/activate
 ```
 
-## Usage
+## 🚀 Usage
 
-### Clustering Scripts
-Execute different clustering approaches:
+Please run the experiments of GRASP and SDC as follows.
 
-- **GRASP with Custom GNN**: `bash scripts/grasp.sh`
-- **GRASP with IGNN**: `bash scripts/ignn.sh`
-- **SDC (Structure-Dependent Clustering)**: `bash scripts/sdc.sh`
+**Page Sampling:**
 
-### Similarity Calculation Scripts
+Run different clustering approaches for the TPS dataset:
+
+* **GRASP with Custom GNN**:
+
+  ```bash
+  bash scripts/grasp.sh
+  ```
+* **GRASP with IGNN**:
+
+  ```bash
+  bash scripts/ignn.sh
+  ```
+* **SDC (Structure-Dependent Clustering)**:
+
+  ```bash
+  bash scripts/sdc.sh
+  ```
+
+**Evaluation:**
+
 Compute similarity metrics for evaluation:
 
-- **GRASP Cosine Similarity**: `bash scripts/cos.sh`
-- **IGNN Cosine Similarity**: `bash scripts/ignn_cos.sh`
-- **SDC Cosine Similarity**: `bash scripts/sdc_cos.sh`
+* **GRASP Cosine Similarity**:
 
-## Requirements
+  ```bash
+  bash scripts/cos.sh
+  ```
+* **IGNN Cosine Similarity**:
 
-See [requirements-dev.txt](./requirements-dev.txt), [requirements.txt](./requirements.txt) and [pyproject.toml:dependencies](./pyproject.toml).
+  ```bash
+  bash scripts/ignn_cos.sh
+  ```
+* **SDC Cosine Similarity**:
 
-## Contributing
+  ```bash
+  bash scripts/sdc_cos.sh
+  ```
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
+## 🤝 Contributing
+
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on reporting issues, contributing improvements, and extending the GRASP framework.
+
+## 📚 Citation
+
+If you find this work useful, please cite our paper:
+
+```bibtex
+@inproceedings{aaa,
+title={Towards Scalable Web Accessibility Audit with {MLLMs} as Copilots},
+author={Ming Gu and Ziwei Wang and Sicen Lai and Zirui Gao and Sheng Zhou and Jiajun Bu},
+journal = {Proceedings of the AAAI Conference on Artificial Intelligence},
+year={2026},
+url={https://arxiv.org/abs/2511.03471}, 
+}
+```
