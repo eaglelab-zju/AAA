@@ -32,7 +32,7 @@ if __name__ == "__main__":
     set_seed(args.seed)
     device = set_device(args.gpu_id)
 
-    base_path = Path("./data/feature_test")
+    base_path = Path("../data/TPS")
     dom_path = base_path.joinpath("UIST_DOMData")
     folders = [f for f in os.listdir(dom_path) if dom_path.joinpath(f).is_dir()]
     N_CLUSTERS = 20

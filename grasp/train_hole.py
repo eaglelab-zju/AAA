@@ -20,7 +20,7 @@ def train_hole(folder, graph: dgl.DGLGraph, features, n_clusters, device, type):
     n_lin_layers = 1
     dump = True
     lr = 0.001
-    n_gnn_layer = 3
+    n_gnn_layer = 1
     pre_epoch = 150
     epochs = 50
     inner_act = torch.nn.Identity()
@@ -28,7 +28,7 @@ def train_hole(folder, graph: dgl.DGLGraph, features, n_clusters, device, type):
     node_ratio = 1
     add_edge_ratio = 0.5
     del_edge_ratio = 0.01
-    gsl_epochs = 10 
+    gsl_epochs = 5
     regularization = 1
     runs = 1
 
@@ -114,6 +114,7 @@ def train_hole(folder, graph: dgl.DGLGraph, features, n_clusters, device, type):
             reset=False,
             regularization=regularization,
             seed=seed,
+            type=type,
         )
 
         model.fit(

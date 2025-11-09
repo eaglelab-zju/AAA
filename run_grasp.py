@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # DOM & screenshot: ./data/feature_test/UIST_DOMData/{folders}/{hctask_id}-xxx/{page_id}(.jpg)
     # axe results: ./data/feature_test/UIST_axeData/axe_res/{hctask_id}/{page_id}
     # adj: ./data/feature_test/UIST_GraphData/{hctask_id}/adj_matrix.txt
-    base_path = Path("../data")
+    base_path = Path("../data/TPS")
     GRAPH_DIR = Path("./tmp/grasp/graphs/")
     EMB_DIR = Path("data/grasp")
     dom_path = base_path.joinpath("UIST_DOMData")

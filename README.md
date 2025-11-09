@@ -1,63 +1,108 @@
 # AAA
 
-<div align="center">
+Official implementation and datasets of the **AAAI 2026 AISI** paper:  
 
-</div>
+[**Towards Scalable Web Accessibility Audit with MLLMs as Copilots**](https://arxiv.org/abs/2511.03471).
 
-## Dataset
-Because the domData dataset is too large, it was downloaded in two batches.
+This repository provides the implementation of the **GRASP** method and accompanying datasets **AWA**.
 
-- APR: <https://drive.google.com/drive/folders/1Crsc00LyOahNfRc4-46kEo7UNvjPhJFA?usp=sharing>
+## 📊 Dataset [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17548393.svg)](https://doi.org/10.5281/zenodo.17548393)
 
-- CCT: <https://drive.google.com/drive/folders/1UhCEH2kAsYA1w9nBjPoOS9ZD91362Tkg?usp=sharing>
+The **AWA Web Accessibility Benchmark** consists of four datasets:
 
-- TPS:
+- **APR** – Accessibility-relevant Page Recognition
+- **CCT** – CAPTCHA of Cognitive Tests 
+- **TPS** – Triple-representativeness Page Sampling
+- **CPE** – Complete Process Extraction 
 
-  - TPS-graphData: <https://drive.google.com/file/d/1ywnKWHg2cN9NX7SXM8Rd48EY-RMq6_op/view?usp=sharing>
+All datasets are publicly available on Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17548393.svg)](https://doi.org/10.5281/zenodo.17548393)
 
-  - TPS-axeData: <https://drive.google.com/file/d/1IzQF0psfFv0uhLWcY7ayzLGEy4VINQ47/view?usp=sharing>
+> [!Important]
+> Before running any scripts, please download at least the **TPS** dataset and place it in the `data/TPS` directory at the same level as this project.  
+> 
+> This repository implements the **GRASP** method, which uses only the TPS dataset.  
+> 
+> For experiments involving **APR**, **CCT**, and **CPE**, please refer to the prompts and run them with any MLLMs as in the [Appendix of our paper](https://arxiv.org/abs/2511.03471).
 
-  - TPS-domData:
-    - batch1: <https://drive.google.com/file/d/14igtp7uQ8GFEoWfgtIyP1UKUlV-6Oeaf/view?usp=sharing>
-    - batch2: <https://drive.google.com/file/d/1BMRLPkQXN9ziAfCldjrzNvEtxPwCtiFt/view?usp=sharing>
 
-- CPE: <https://drive.google.com/drive/folders/10ahYck3D0p3ec1_8cff4BkUhbujQ5lDk?usp=sharing>
+## 🛠️ Installation
 
-## Installation
+**Requirements:**
+- Python >= 3.8
+- CUDA-compatible GPU (recommended)
+- Dependencies are listed in:
+  * [requirements.txt](./requirements.txt)
+  * [requirements-dev.txt](./requirements-dev.txt)
+  * [pyproject.toml](./pyproject.toml)
 
-- python>=3.8
-- for installation scripts see `.ci/install-dev.sh`, `.ci/install.sh`
-
+**Setup:**
 ```bash
+# Run installation scripts
 bash .ci/install-dev.sh
 bash .ci/install.sh
+
+# Activate virtual environment
+source .env/bin/activate
 ```
 
-## Usage
+## 🚀 Usage
 
-Scripts for clustering data sets in different ways:
+Please run the experiments of GRASP and SDC as follows.
 
-`source .env/bin/activate`
+**Page Sampling:**
 
-- grasp-custom-GNN: `scripts/grasp.sh`
+Run different clustering approaches for the TPS dataset:
 
-- grasp-IGNN: `scripts/ignn.sh`
+* **GRASP with Custom GNN**:
 
-- sdc: `scripts/sdc.sh`
+  ```bash
+  bash scripts/grasp.sh
+  ```
+* **GRASP with IGNN**:
 
+  ```bash
+  bash scripts/ignn.sh
+  ```
+* **SDC (Structure-Dependent Clustering)**:
 
-Script for calculating similarity:
+  ```bash
+  bash scripts/sdc.sh
+  ```
 
-- grasp-custom-GNN: `scripts/cos.sh`
+**Evaluation:**
 
-- grasp-IGNN: `scripts/ignn_cos.sh`
+Compute similarity metrics for evaluation:
 
-- sdc: `scripts/sdc_cos.sh`
+* **GRASP Cosine Similarity**:
 
-## Requirements
+  ```bash
+  bash scripts/cos.sh
+  ```
+* **IGNN Cosine Similarity**:
 
-See [requirements-dev.txt](./requirements-dev.txt), [requirements.txt](./requirements.txt) and [pyproject.toml:dependencies](./pyproject.toml).
+  ```bash
+  bash scripts/ignn_cos.sh
+  ```
+* **SDC Cosine Similarity**:
 
-## Contributing
+  ```bash
+  bash scripts/sdc_cos.sh
+  ```
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
+## 🤝 Contributing
+
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on reporting issues, contributing improvements, and extending the GRASP framework.
+
+## 📚 Citation
+
+If you find this work useful, please cite our paper:
+
+```bibtex
+@inproceedings{aaa,
+title={Towards Scalable Web Accessibility Audit with {MLLMs} as Copilots},
+author={Ming Gu and Ziwei Wang and Sicen Lai and Zirui Gao and Sheng Zhou and Jiajun Bu},
+journal = {Proceedings of the AAAI Conference on Artificial Intelligence},
+year={2026},
+url={https://arxiv.org/abs/2511.03471}, 
+}
+```
